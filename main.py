@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, File, UploadFile, Depends, Cookie
+from fastapi.middleware.cors import CORSMiddleware
 
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -13,6 +14,15 @@ from database import engine, get_db
 import models
 
 app = FastAPI()
+
+# CORS 처리
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # 실제 운영환경에서는 구체적인 도메인 지정
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 # 앱 시작 시 DB에 테이블 생성
 models.Base.metadata.create_all(bind=engine)
