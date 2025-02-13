@@ -177,6 +177,71 @@ async def upload_file(
     db.add(new_file)
     db.commit()
     db.refresh(new_file)
+    # 삭제할 파일 경로
+    file_path = f'temp/{file_name}'
 
+    # 파일 삭제
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        print(f"{file_path} 파일이 삭제되었습니다.")
+    else:
+        print(f"{file_path} 파일이 존재하지 않습니다.")
+    
     return {"message": "File uploaded successfully", "file_path": file_path, "file_name": file_name}
 
+# 삭제
+@app.delete("/file/{filename}")
+async def delete_file(filename: str, db: Session = Depends(get_db)):
+    file = db.query(models.File).filter(models.File.name == filename).first()
+    if not file:
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    # FTP 서버에서 파일 삭제
+    try:
+        ftp = ftplib.FTP()
+        ftp.connect(host=FTP_HOST, port=FTP_PORT)
+        ftp.login(user=FTP_USER, passwd=FTP_PASS)
+        ftp.encoding = "utf-8"
+        
+        ftp.delete(file.name)
+        print(f"파일 삭제 성공: {file.name}")
+        
+        ftp.quit()
+        
+    except Exception as e:
+        print(f"에러 발생: {str(e)}")
+    
+    # DB에서 파일 정보 삭제
+    db.delete(file)
+    db.commit()
+    
+    return {"message": "File deleted successfully"}
+
+# 이름 변경
+@app.put("/file/{file_id}")
+async def rename_file(filename: str, new_name: str, db: Session = Depends(get_db)):
+    file = db.query(models.File).filter(models.File.name == filename).first()
+    if not file:
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    # FTP 서버에서 파일 이름 변경
+    try:
+        ftp = ftplib.FTP()
+        ftp.connect(host=FTP_HOST, port=FTP_PORT)
+        ftp.login(user=FTP_USER, passwd=FTP_PASS)
+        ftp.encoding = "utf-8"
+        
+        ftp.rename(file.name, new_name)
+        print(f"파일 이름 변경 성공: {file.name} -> {new_name}")
+        
+        ftp.quit()
+        
+    except Exception as e:
+        print(f"에러 발생: {str(e)}")
+    
+    # DB에서 파일 정보 변경
+    file.name = new_name
+    file.file_url = f"http://127.0.0.1/{new_name}"
+    db.commit()
+    
+    return {"message": "File renamed successfully"}
