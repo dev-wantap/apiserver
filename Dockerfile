@@ -1,4 +1,4 @@
-FROM ubuntu:24.04
+FROM python:3.13.2-slim
 
 # 시스템 시간대 설정
 ENV TZ=Asia/Seoul
@@ -21,36 +21,31 @@ RUN apt-get update && apt-get install -y \
     libxmlsec1-dev \
     libffi-dev \
     liblzma-dev \
-    python3-pip \
-    python3-dev \
     wget \
     make \
-    sudo
+    sudo \
+    python3-venv # 가상 환경을 위한 패키지
 
-# pyenv 설치
-RUN git clone https://github.com/pyenv/pyenv.git ~/.pyenv
+# 가상 환경 생성
+RUN python3 -m venv /venv
 
-# pyenv 환경변수 설정
-ENV PYENV_ROOT=/root/.pyenv
-ENV PATH=$PYENV_ROOT/bin:$PATH
-
-# pyenv 초기화
-RUN echo 'eval "$(pyenv init --path)"' >> ~/.bashrc && \
-    echo 'eval "$(pyenv init -)"' >> ~/.bashrc && \
-    echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.bashrc
-
-# pyenv를 통해 Python 설치
-RUN . ~/.bashrc && \
-    pyenv install 3.13.2 && \
-    pyenv global 3.13.2
+# 가상 환경 활성화
+ENV PATH="/venv/bin:$PATH"
 
 # pip 업그레이드 및 필요한 패키지 설치
-RUN . ~/.bashrc && \
-    pip install --upgrade pip && \
-    pip install pipenv uvicorn fastapi
+RUN pip install --upgrade pip && \
+    pip install uvicorn fastapi sqlalchemy python-multipart
 
-# 작업 디렉토리 설정
-WORKDIR /app
+WORKDIR /root/apiserver/
+
+RUN mkdir /root/apiserver/temp
+
+COPY database.py /root/apiserver/database.py
+COPY main.py /root/apiserver/main.py
+COPY models.py /root/apiserver/models.py
 
 # 포트 설정
 EXPOSE 8000
+
+# 기본 실행 명령어
+CMD ["uvicorn", "main:app", "--reload", "--host", "0.0.0.0"]
