@@ -93,6 +93,7 @@ async def login(user: UserLogin, db: Session = Depends(get_db)):
     
     response = JSONResponse({
         "message": "로그인 성공",
+        "success": 1,
         "username": db_user.username,
         "nickname": db_user.nickname
     })
