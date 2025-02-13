@@ -179,16 +179,3 @@ async def upload_file(
 
     return {"message": "File uploaded successfully", "file_path": file_path, "file_name": file_name}
 
-
-# 사용 예시
-
-
-# 로컬 DB에 저장하는 함수 (예시, 실제 구현은 DB에 맞게 수정 필요)
-def save_to_db(original_filename: str, file_url: str):
-    # 로컬 DB에 파일 정보를 저장하는 로직을 작성합니다.
-    # 예를 들어, SQLAlchemy를 사용하여 데이터베이스에 저장하는 방법을 사용할 수 있습니다.
-    # SQLAlchemy를 사용한 예시:
-    # db.add(FileInfo(original_filename=original_filename, file_url=file_url))
-    # db.commit()
-    pass
-
