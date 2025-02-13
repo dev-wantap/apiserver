@@ -157,7 +157,6 @@ async def upload_file(
     # 서버에 저장된 url 및 파일 원본 이름 db에 저장
     download_url = f"http://127.0.0.1/{file_name}"
 
-    # DB 저장 파트
     # username으로 user 조회
     user = db.query(models.User).filter(models.User.username == username).first()
     if not user:
