@@ -136,7 +136,11 @@ async def upload_file(
     db: Session = Depends(get_db)
 ):
     # file_name = file_name.strip()
-    print(username)
+    if not username:
+        raise HTTPException(
+            status_code=401,
+            detail="로그인이 필요합니다"
+        )
     # 로컬 저장 디렉토리 정보
     folder_path = os.path.join("temp")
     if not os.path.exists(folder_path):
