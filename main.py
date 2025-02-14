@@ -241,7 +241,7 @@ async def rename_file(filename: str, new_name: str, db: Session = Depends(get_db
     
     # DB에서 파일 정보 변경
     file.name = new_name
-    file.file_url = f"http://127.0.0.1/{new_name}"
+    file.file_url = f"http://127.0.0.1:81/{new_name}"
     db.commit()
     
     return {"message": "File renamed successfully"}
