@@ -160,7 +160,7 @@ async def upload_file(
     upload_to_ftp(f"temp/{file_name}", file_name) # 로컬파일경로, 원격저장이름
 
     # 서버에 저장된 url 및 파일 원본 이름 db에 저장
-    download_url = f"http://127.0.0.1/{file_name}"
+    download_url = f"http://127.0.0.1:81/{file_name}"
 
     # username으로 user 조회
     user = db.query(models.User).filter(models.User.username == username).first()
@@ -207,18 +207,18 @@ async def delete_file(filename: str, db: Session = Depends(get_db)):
         print(f"파일 삭제 성공: {file.name}")
         
         ftp.quit()
-        
+        # DB에서 파일 정보 삭제
+        db.delete(file)
+        db.commit()
     except Exception as e:
         print(f"에러 발생: {str(e)}")
     
-    # DB에서 파일 정보 삭제
-    db.delete(file)
-    db.commit()
+    
     
     return {"message": "File deleted successfully"}
 
 # 이름 변경
-@app.put("/file/{file_id}")
+@app.put("/file/{filename}")
 async def rename_file(filename: str, new_name: str, db: Session = Depends(get_db)):
     file = db.query(models.File).filter(models.File.name == filename).first()
     if not file:
@@ -235,14 +235,15 @@ async def rename_file(filename: str, new_name: str, db: Session = Depends(get_db
         print(f"파일 이름 변경 성공: {file.name} -> {new_name}")
         
         ftp.quit()
+
+        # DB에서 파일 정보 변경
+        file.name = new_name
+        file.file_url = f"http://127.0.0.1:81/{new_name}"
+        db.commit()
         
     except Exception as e:
         print(f"에러 발생: {str(e)}")
     
-    # DB에서 파일 정보 변경
-    file.name = new_name
-    file.file_url = f"http://127.0.0.1:81/{new_name}"
-    db.commit()
     
     return {"message": "File renamed successfully"}
 
@@ -256,3 +257,19 @@ async def get_file_names(db: Session = Depends(get_db)):
     file_names = [file[0] for file in files]
     
     return {"file_names": file_names}
+
+
+@app.get("/download/{filename}")
+async def get_download_url(filename: str, db: Session = Depends(get_db)):
+    # DB에서 파일명으로 파일 정보 조회
+    file = db.query(models.File).filter(models.File.name == filename).first()
+    
+    # 파일이 존재하지 않는 경우 예외 처리
+    if not file:
+        raise HTTPException(
+            status_code=404,
+            detail="파일을 찾을 수 없습니다"
+        )
+    
+    # 파일의 다운로드 URL 반환
+    return {"file_url": file.file_url}
