@@ -245,3 +245,14 @@ async def rename_file(filename: str, new_name: str, db: Session = Depends(get_db
     db.commit()
     
     return {"message": "File renamed successfully"}
+
+# 파일 목록 조회 엔드포인트
+@app.get("/files/names")
+async def get_file_names(db: Session = Depends(get_db)):
+    # File 테이블에서 name 컬럼만 조회
+    files = db.query(models.File.name).all()
+    
+    # 파일 이름만 리스트로 변환
+    file_names = [file[0] for file in files]
+    
+    return {"file_names": file_names}
