@@ -247,6 +247,7 @@ async def rename_file(filename: str, new_name: str, db: Session = Depends(get_db
     
     return {"message": "File renamed successfully"}
 
+@app.get("/files/names")
 async def get_file_names(db: Session = Depends(get_db)):
     # File 테이블에서 name 컬럼만 조회
     files = db.query(models.File.name).all()
