@@ -5,6 +5,6 @@ docker build -t api-server .
 docker run api-server
 docker run -d \
   -p 8000:8000 \
-  --name file-server \
+  --name api-server \
   -e FTP_HOST="file-server의 IP주소"
   api-server
