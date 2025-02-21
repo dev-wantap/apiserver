@@ -247,28 +247,9 @@ async def rename_file(filename: str, new_name: str, db: Session = Depends(get_db
     
     return {"message": "File renamed successfully"}
 
-@app.get("/files/names")
-async def get_file_names(
-    username: str = Cookie(None),  # 쿠키에서 username 가져오기
-    db: Session = Depends(get_db)
-):
-    # 쿠키 검증: username이 없으면 예외 처리
-    if not username:
-        raise HTTPException(
-            status_code=401,
-            detail="로그인이 필요합니다"
-        )
-    
-    # User 테이블에서 username으로 ID 조회
-    user = db.query(models.User).filter(models.User.username == username).first()
-    if not user:
-        raise HTTPException(
-            status_code=404,
-            detail="사용자를 찾을 수 없습니다"
-        )
-    
-    # File 테이블에서 user_id가 사용자의 ID와 일치하는 파일 이름 조회
-    files = db.query(models.File.name).filter(models.File.user_id == user.id).all()
+async def get_file_names(db: Session = Depends(get_db)):
+    # File 테이블에서 name 컬럼만 조회
+    files = db.query(models.File.name).all()
 
     # 파일 이름만 리스트로 변환
     file_names = [file[0] for file in files]
