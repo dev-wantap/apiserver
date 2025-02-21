@@ -106,7 +106,7 @@ async def login(user: UserLogin, db: Session = Depends(get_db)):
 
 # POST, 파일 업로드, "/file"
 # FTP 서버 접속 정보
-FTP_HOST = "localhost"  # 또는 "127.0.0.1" 사용 가능
+FTP_HOST = os.environ.get("FTP_HOST", "localhost")
 FTP_PORT = 21
 FTP_USER = "ftpuser"
 FTP_PASS = "ftppassword"
