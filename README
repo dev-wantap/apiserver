@@ -1,0 +1,10 @@
+이미지 빌드
+docker build -t api-server .
+
+실행 시
+docker run api-server
+docker run -d \
+  -p 8000:8000 \
+  --name file-server \
+  -e FTP_HOST="file-server의 IP주소"
+  api-server
